@@ -1,0 +1,21 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webapp_name": {
+      "value": "dss-catalog-webapp-1"
+    },
+    "webapi_name": {
+      "value": "dss-catalog-webapi-1"
+    },
+    "serverfarms_appPlan_name": {
+      "value": "dss-catalog-srvplan-1"
+    },
+    "servers_dbserver_name": {
+      "value": "dsscatalogdbserver-1"
+    },
+    "storageaccount_name": {
+      "value": "dsscatalogstorage-1"
+    }
+  }
+}

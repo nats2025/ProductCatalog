@@ -1,0 +1,154 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webapp_name": {
+      "defaultValue": "dss-catalog-webapp",
+      "type": "String"
+    },
+    "webapi_name": {
+      "defaultValue": "dss-catalog-webapi",
+      "type": "String"
+    },
+    "serverfarms_appPlan_name": {
+      "defaultValue": "dss-catalog-srvplan",
+      "type": "String"
+    },
+    "servers_dbserver_name": {
+      "defaultValue": "dsscatalogdbserver",
+      "type": "String"
+    },
+    "storageaccount_name": {
+      "defaultValue": "dsscatalogstorage",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('storageaccount_name')]",
+      "location": "eastus",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('storageaccount_name'), '/default/images')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageaccount_name'))]"
+      ],
+      "properties": {
+        "publicAccess": "Blob"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[parameters('servers_dbserver_name')]",
+      "location": "eastus",
+      "kind": "v12.0",
+      "properties": {
+        "administratorLogin": "dssadmin",
+        "administratorLoginPassword": "Password@123",
+        "version": "12.0",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2020-08-01-preview",
+      "name": "[concat(parameters('servers_dbserver_name'), '/ProductCatalogDb')]",
+      "location": "eastus",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_dbserver_name'))]"
+      ],
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic",
+        "capacity": 5
+      },
+      "kind": "v12.0,user",
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 2147483648,
+        "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+        "zoneRedundant": false,
+        "readScale": "Disabled",
+        "storageAccountType": "GRS"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2015-05-01-preview",
+      "name": "[concat(parameters('servers_dbserver_name'), '/AllowAllWindowsAzureIps')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_dbserver_name'))]"
+      ],
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "255.255.255.255"
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "name": "[parameters('serverfarms_appPlan_name')]",
+      "location": "East US",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "size": "S1",
+        "family": "S",
+        "capacity": 1
+      },
+      "kind": "app",
+      "properties": {
+        "perSiteScaling": false,
+        "maximumElasticWorkerCount": 1,
+        "isSpot": false,
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('webapi_name')]",
+      "location": "East US",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_appPlan_name'))]"
+      ],
+      "kind": "app",
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_appPlan_name'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('webapp_name')]",
+      "location": "East US",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_appPlan_name'))]"
+      ],
+      "kind": "app",
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_appPlan_name'))]"
+      }
+    }
+  ]
+}
