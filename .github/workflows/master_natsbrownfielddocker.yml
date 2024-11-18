@@ -22,10 +22,10 @@ jobs:
           dotnet-version: '9.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release ProductCatalog/ProductCatalog.Web/ProductCatalog.Web.csproj
+        run: dotnet build --configuration Release ProductCatalog/ProductCatalog.API/ProductCatalog.API.csproj
 
       - name: dotnet publish
-        run: dotnet publish ProductCatalog/ProductCatalog.Web/ProductCatalog.Web.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish ProductCatalog/ProductCatalog.API/ProductCatalog.API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
